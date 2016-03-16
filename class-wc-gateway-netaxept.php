@@ -21,10 +21,11 @@ function woocommerce_gateway_netaxept_init()
         return;
     }
 
-
+    require_once('lib/Netaxept.php');
 
     class WC_Gateway_Netaxept extends WC_Payment_Gateway
     {
+
         public function __construct()
         {
             $this->id = "netaxept";
@@ -35,10 +36,23 @@ function woocommerce_gateway_netaxept_init()
             $this->icon = null;
             $this->init_form_fields();
             $this->init_settings();
+
+
+            $this->merchant_id = $this->settings['merchant_id'];
+            $this->service_token = $this->settings['service_token'];
+            $this->testmode = $this->settings['testmode'];
+
+
+            add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
+
         }
+
+
 
         public function init_form_fields()
         {
+
+
             $this->form_fields = array(
               'enabled' => array(
                 'title' => __('Enable / Disable', 'netaxept'),
@@ -72,7 +86,7 @@ function woocommerce_gateway_netaxept_init()
                 'title' => __('Test mode', 'netaxept'),
                 'type' => 'checkbox',
                 'label' => __('Enable Netaxept test mode', 'netaxept'),
-                'default' => 'no',
+                'default' => 'yes',
                 'description' => sprintf(__('Netaxept test mode can be used to test payments. You will need a test account and you can find the test cardshere <a href="%s">here</a>.', 'netaxept'), 'http://betalingsterminal.no/Netthandel-forside/Teknisk-veiledning/Test-cards/'),
               ),
               'force3d' => array(
@@ -110,11 +124,38 @@ function woocommerce_gateway_netaxept_init()
 
       public function process_payment($order_id)
       {
-          require_once('lib/netaxept-request.php');
+          global $woocommerce;
+          $order = new WC_Order($order_id);
+
+          /* Do register request and redirect user to the Terminal */
+
+          $request = new Netaxept_Register();
+
+          $parameters = array(
+            'merchantId' => (String)$this->merchant_id,
+            'token' => (String)$this->service_token,
+            'amount' => $order->order_total * 100,
+            'orderNumber' => (String)$order->get_order_number(),
+            'CurrencyCode' => strtoupper(get_woocommerce_currency()),
+            'redirectUrl' => 'http://localhost/test'
+          );
 
 
-        //order id
-        $order = wc_get_order($order_id);
+          if ($this->testmode == 'yes') {
+            Netaxept_Environment::setEnvironment(Netaxept_Environment::TEST);
+          } else {
+            Netaxept_Environment::setEnvironment(Netaxept_Environment::LIVE);
+          }
+
+          $transaction_id = $request->create($parameters);
+
+          $redirect_uri = "https://test.epayment.nets.eu/Terminal/default.aspx?merchantId=12001114&transactionId=" . $transaction_id;
+
+          return array(
+            'result' => 'success',
+            'redirect' => $redirect_uri
+          );
+
       }
     }
 
