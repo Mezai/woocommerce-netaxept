@@ -186,7 +186,7 @@ function woocommerce_gateway_netaxept_init()
 
           $request_response = $request_process->create($parameters);
 
-          if ($request_response == 'OK')
+          if ($request_response->ResponseCode == 'OK')
           {
             wp_redirect($this->get_return_url());
             exit;
