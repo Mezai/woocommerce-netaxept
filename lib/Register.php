@@ -21,7 +21,7 @@ class Netaxept_Register
     $environment = Netaxept_Environment::getEnvironment();
 
     $request_uri = $environment . self::RELATIVE_PATH;
-
+    $array_length = count($params);
     $requestParams = '';
     foreach ($params as $key => $value) {
 

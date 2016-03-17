@@ -176,8 +176,6 @@ function woocommerce_gateway_netaxept_init()
         if ($response == 'OK')
         {
           $request_process = new Netaxept_Process();
-
-
           $parameters = array(
             'merchantId' => (String)$this->merchant_id,
             'token' => (String)$this->service_token,
@@ -191,9 +189,11 @@ function woocommerce_gateway_netaxept_init()
           if ($request_response == 'OK')
           {
             wp_redirect($this->get_return_url());
+            exit;
+          } else {
+            wp_redirect($woocommerce->cart->get_checkout_url());
+            exit;
           }
-
-
         }
       }
     }
