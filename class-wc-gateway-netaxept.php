@@ -41,11 +41,16 @@ function woocommerce_gateway_netaxept_init()
             $this->merchant_id = $this->settings['merchant_id'];
             $this->service_token = $this->settings['service_token'];
             $this->testmode = $this->settings['testmode'];
+            $this->force3d = $this->settings['force3d'];
+            $this->payment_operation = $this->settings['paymentmode'];
+            $this->singlepage = $this->settings['singlepage'];
             $this->redirectUrl = add_query_arg('wc-api', get_class($this), site_url());
 
-
-            add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
-
+            if (is_admin())
+            {
+              add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
+            }
+              add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'response_handler'));
         }
 
 
@@ -139,7 +144,9 @@ function woocommerce_gateway_netaxept_init()
             'orderNumber' => (String)$order->get_order_number(),
             'currencyCode' => strtoupper(get_woocommerce_currency()),
             'redirectUrl' => $this->redirectUrl,
-            'language' => (String)get_locale()
+            'language' => (String)get_locale(),
+            'force3DSecure' => $this->force3d == 'yes' ? 'true' : 'false',
+            'terminalSinglePage' => $this->singlepage == 'yes' ? 'true' : 'false'
           );
 
 
@@ -151,13 +158,43 @@ function woocommerce_gateway_netaxept_init()
 
           $transaction_id = $request->create($parameters);
 
-          $redirect_uri = "https://test.epayment.nets.eu/Terminal/default.aspx?merchantId=12001114&transactionId=" . $transaction_id;
+          $redirect_uri = "https://test.epayment.nets.eu/Terminal/default.aspx?merchantId=".$this->merchant_id."&transactionId=".$transaction_id;
 
           return array(
             'result' => 'success',
             'redirect' => $redirect_uri
           );
 
+      }
+
+      public function response_handler()
+      {
+        global $woocommerce;
+
+        $response = $_GET['responseCode'];
+        $transactionId = $_GET['transactionId'];
+        if ($response == 'OK')
+        {
+          $request_process = new Netaxept_Process();
+
+
+          $parameters = array(
+            'merchantId' => (String)$this->merchant_id,
+            'token' => (String)$this->service_token,
+            'transactionId' => $transactionId,
+            'operation' => $this->payment_operation == 'sale' ? 'SALE' : 'AUTH'
+          );
+          Netaxept_Environment::setEnvironment(Netaxept_Environment::TEST);
+
+          $request_response = $request_process->create($parameters);
+
+          if ($request_response == 'OK')
+          {
+            wp_redirect($this->get_return_url());
+          }
+
+
+        }
       }
     }
 
