@@ -41,6 +41,7 @@ function woocommerce_gateway_netaxept_init()
             $this->merchant_id = $this->settings['merchant_id'];
             $this->service_token = $this->settings['service_token'];
             $this->testmode = $this->settings['testmode'];
+            $this->redirectUrl = add_query_arg('wc-api', get_class($this), site_url());
 
 
             add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
@@ -136,8 +137,9 @@ function woocommerce_gateway_netaxept_init()
             'token' => (String)$this->service_token,
             'amount' => $order->order_total * 100,
             'orderNumber' => (String)$order->get_order_number(),
-            'CurrencyCode' => strtoupper(get_woocommerce_currency()),
-            'redirectUrl' => 'http://localhost/test'
+            'currencyCode' => strtoupper(get_woocommerce_currency()),
+            'redirectUrl' => $this->redirectUrl,
+            'language' => (String)get_locale()
           );
 
 
