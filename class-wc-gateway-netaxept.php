@@ -33,11 +33,12 @@ function woocommerce_gateway_netaxept_init()
             $this->method_title = __("Netaxept", "netaxept");
             $this->order_button_text = __("Proceed to Netaxept", "netaxept");
             $this->method_description = __("Netaxept payment gateway extension", "netaxept");
-            $this->icon = null;
+            $this->icon = plugin_dir_url(__FILE__) . '/assets/images/netaxept.png';
             $this->init_form_fields();
             $this->init_settings();
 
-
+            $this->title = $this->get_option('title');
+            $this->description = $this->get_option('description');
             $this->merchant_id = $this->settings['merchant_id'];
             $this->service_token = $this->settings['service_token'];
             $this->testmode = $this->settings['testmode'];
