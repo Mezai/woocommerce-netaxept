@@ -19,19 +19,14 @@ class Netaxept_Process
 
         $request_uri = $environment . self::RELATIVE_PATH;
 
-        $counter = 1;
-        $requestParams = '';
-
-        foreach ($params as $key => $value) {
-            urlencode($value);
-            $requestParams .= ($counter == 1) ? "$key=$value" : "&$key=$value";
-            $counter++;
-        }
-
         $request = new Netaxept_HTTP_Request($request_uri . $requestParams);
         $transport = new Netaxept_HTTP_Transport();
         $netaxept_request = $transport->create();
         $process = $netaxept_request->send($request);
+
+        if (!is_object($process)) {
+          throw new Netaxept_ConnectionExeption("No response from webservice");
+        }
 
         return $process;
     }

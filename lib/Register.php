@@ -3,6 +3,13 @@ class Netaxept_Register
 {
     const RELATIVE_PATH = '/Netaxept/Register.aspx?';
 
+
+    /*Creates a register request
+    * @param array request parameters
+    *
+    * return request obj || throws ConnectionException
+    */
+
     public function create($params)
     {
         if (is_null(Netaxept_Environment::getEnvironment())) {
@@ -14,21 +21,19 @@ class Netaxept_Register
         }
 
         $environment = Netaxept_Environment::getEnvironment();
-        $request_uri = $environment . self::RELATIVE_PATH;
-        $counter = 1;
-        $requestParams = '';
 
-        foreach ($params as $key => $value) {
-            urlencode($value);
-            $requestParams .= ($counter == 1) ? "$key=$value" : "&$key=$value";
-            $counter++;
+        $request = new Netaxept_HTTP_Request($environment . self::RELATIVE_PATH, $params);
+
+        $transport = new Netaxept_HTTP_Transport();
+
+        $netaxept_request = $transport->create();
+
+        $register = $netaxept_request->send($request);
+
+        if (!isset($register->TransactionId) || !is_object($register)) {
+            throw new Netaxept_ConnectionExeption("No response from webservice");
         }
 
-        $request = new Netaxept_HTTP_Request($request_uri . $requestParams);
-        $transport = new Netaxept_HTTP_Transport();
-        $netaxept_request = $transport->create();
-        $transactionId = $netaxept_request->send($request);
-
-        return $transactionId->TransactionId;
+        return $register;
     }
 }

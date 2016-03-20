@@ -156,7 +156,8 @@ function woocommerce_gateway_netaxept_init()
             Netaxept_Environment::setEnvironment(Netaxept_Environment::LIVE);
           }
 
-          $transaction_id = $request->create($parameters);
+          $register = $request->create($parameters);
+          $transaction_id = $register->TransactionId;
 
           $redirect_uri = "https://test.epayment.nets.eu/Terminal/default.aspx?merchantId=".$this->merchant_id."&transactionId=".$transaction_id;
 
@@ -182,7 +183,9 @@ function woocommerce_gateway_netaxept_init()
             'transactionId' => $transactionId,
             'operation' => $this->payment_operation == 'sale' ? 'SALE' : 'AUTH'
           );
-          Netaxept_Environment::setEnvironment(Netaxept_Environment::TEST);
+
+
+
 
           $request_response = $request_process->create($parameters);
 

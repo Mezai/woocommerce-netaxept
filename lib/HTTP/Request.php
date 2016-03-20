@@ -10,15 +10,16 @@ class Netaxept_HTTP_Request
 
     protected $data;
 
-    public function __construct($url)
+
+    public function __construct($url, $data)
     {
         $this->url = $url;
-        $this->method = 'GET';
+        $this->method = 'POST';
         $this->headers = array();
-        $this->data = '';
+        $this->data = $data;
     }
 
-    public function setEnvironment($url)
+    public function setUrl($url)
     {
         $this->$url = $url;
     }
@@ -63,6 +64,14 @@ class Netaxept_HTTP_Request
 
   public function setData($data)
   {
+      $counter = 1;
+      $data = '';
+      foreach ($data as $key => $value) {
+        urlencode($value);
+        $data .= ($counter == 1) ? "$key=$value" : "&$key=$value";
+        $counter++;
+      }
+
       $this->data = $data;
   }
 
