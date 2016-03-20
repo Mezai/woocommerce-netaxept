@@ -10,7 +10,6 @@ class Netaxept_HTTP_Request
 
     protected $data;
 
-
     public function __construct($url, $data)
     {
         $this->url = $url;
