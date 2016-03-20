@@ -10,8 +10,7 @@ class Netaxept_Query
             throw new RequestErrorException("Parameters should be passed as an array");
         }
         $environment = Netaxept_Environment::getEnvironment();
-        $request_uri = $environment . self::RELATIVE_PATH;
-        $request = new Netaxept_HTTP_Request($request_uri, $params);
+        $request = new Netaxept_HTTP_Request($environment . self::RELATIVE_PATH, $params);
         $transport = new Netaxept_HTTP_Transport();
         $netaxept_request = $transport->create();
         $query = $netaxept_request->send($request);

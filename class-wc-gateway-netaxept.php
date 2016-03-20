@@ -185,9 +185,6 @@ function woocommerce_gateway_netaxept_init()
             'operation' => $this->payment_operation == 'sale' ? 'SALE' : 'AUTH'
           );
 
-
-
-
           $request_response = $request_process->create($parameters);
 
           if ($request_response->ResponseCode == 'OK')
