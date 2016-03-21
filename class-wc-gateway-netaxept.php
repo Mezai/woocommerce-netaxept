@@ -47,19 +47,22 @@ function woocommerce_gateway_netaxept_init()
             $this->singlepage = $this->settings['singlepage'];
             $this->redirectUrl = add_query_arg('wc-api', get_class($this), site_url());
 
-            if (is_admin())
-            {
-              add_action('woocommerce_update_options_payment_gateways_' . $this->id , array($this, 'process_admin_options'));
+            if (is_admin()) {
+                add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
             }
-              add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'response_handler'));
+            add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'response_handler'));
+
+            if ($this->testmode == 'yes') {
+                Netaxept_Environment::setEnvironment(TEST);
+            } else {
+                Netaxept_Environment::setEnvironment(LIVE);
+            }
         }
 
 
 
         public function init_form_fields()
         {
-
-
             $this->form_fields = array(
               'enabled' => array(
                 'title' => __('Enable / Disable', 'netaxept'),
@@ -135,8 +138,7 @@ function woocommerce_gateway_netaxept_init()
           $order = new WC_Order($order_id);
 
           /* Do register request and redirect user to the Terminal */
-
-
+          $register = new Netaxept_Register();
 
           $parameters = array(
             'merchantId' => (String)$this->merchant_id,
@@ -149,55 +151,48 @@ function woocommerce_gateway_netaxept_init()
             'force3DSecure' => $this->force3d == 'yes' ? 'true' : 'false',
             'terminalSinglePage' => $this->singlepage == 'yes' ? 'true' : 'false'
           );
+          $transaction_id = $register->send($parameters);
 
-          $request = new Netaxept_Register($parameters);
-
-          if ($this->testmode == 'yes') {
-            Netaxept_Environment::setEnvironment(Netaxept_Environment::TEST);
-          } else {
-            Netaxept_Environment::setEnvironment(Netaxept_Environment::LIVE);
-          }
-
-          $register = $request->send();
-          $transaction_id = $register->TransactionId;
-
-          $redirect_uri = "https://test.epayment.nets.eu/Terminal/default.aspx?merchantId=".$this->merchant_id."&transactionId=".$transaction_id;
+          $redirect_uri = "https://test.epayment.nets.eu/Terminal/default.aspx?merchantId=".$this->merchant_id."&transactionId=".$transaction_id->TransactionId;
 
           return array(
             'result' => 'success',
             'redirect' => $redirect_uri
           );
-
       }
 
-      public function response_handler()
-      {
-        global $woocommerce;
-
-        $response = $_GET['responseCode'];
-        $transactionId = $_GET['transactionId'];
-        if ($response == 'OK')
+        public function response_handler()
         {
-          $request_process = new Netaxept_Process();
-          $parameters = array(
-            'merchantId' => (String)$this->merchant_id,
-            'token' => (String)$this->service_token,
-            'transactionId' => $transactionId,
-            'operation' => $this->payment_operation == 'sale' ? 'SALE' : 'AUTH'
-          );
+            global $woocommerce, $post;
 
-          $request_response = $request_process->create($parameters);
+            $response = $_GET['responseCode'];
+            $transactionId = $_GET['transactionId'];
+            $order = new WC_Order($post->ID);
+            if ($response == 'OK') {
+                $process = new Netaxept_Process();
 
-          if ($request_response->ResponseCode == 'OK')
-          {
-            wp_redirect($this->get_return_url());
-            exit;
-          } else {
-            wp_redirect($woocommerce->cart->get_checkout_url());
-            exit;
-          }
+                $parameters = array(
+                  'merchantId' => (String)$this->merchant_id,
+                  'token' => (String)$this->service_token,
+                  'transactionId' => $transactionId,
+                  'operation' => $this->payment_operation == 'sale' ? 'SALE' : 'AUTH'
+                );
+
+                $response = $process->send($parameters);
+
+                if ($response->ResponseCode == 'OK') {
+                    $order->reduce_order_stock();
+                    $order->add_order_note(__('Netaxept payment complete', 'netaxept'));
+                    $order->payment_complete();
+                    $woocommerce->cart->empty_cart();
+                    wp_redirect($this->get_return_url());
+                    exit;
+                } else {
+                    wp_redirect($woocommerce->cart->get_checkout_url());
+                    exit;
+                }
+            }
         }
-      }
     }
 
     function woocommerce_add_gateway_netaxept($methods)
