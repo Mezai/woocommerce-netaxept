@@ -77,7 +77,7 @@ class Netaxept_CurlTransport implements Netaxept_TransportInterface
         $response = simplexml_load_string($payload);
 
         if (isset($response->Error)) {
-          throw new RequestErrorException("Netaxept responded with :" .$response->Error->Message);
+            throw new RequestErrorException("Netaxept responded with :" .$response->Error->Message);
         }
 
         return $response;

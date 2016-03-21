@@ -1,24 +1,11 @@
 <?php
 
-class Netaxept_Query
+class Netaxept_Query extends Operation
 {
     const RELATIVE_PATH = '/Netaxept/Query.aspx?';
 
-    public function create($params)
+    public function send($params)
     {
-        if (!is_array($params)) {
-            throw new RequestErrorException("Parameters should be passed as an array");
-        }
-        $environment = Netaxept_Environment::getEnvironment();
-        $request = new Netaxept_HTTP_Request($environment . self::RELATIVE_PATH, $params);
-        $transport = new Netaxept_HTTP_Transport();
-        $netaxept_request = $transport->create();
-        $query = $netaxept_request->send($request);
-
-        if (!is_object($query)) {
-          throw new Netaxept_ConnectionExeption("No response from webservice");
-        }
-
-        return $query;
+        return $this->create($params, self::RELATIVE_PATH);
     }
 }

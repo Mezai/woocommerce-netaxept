@@ -1,8 +1,10 @@
 <?php
+const TEST = 'https://test.epayment.nets.eu';
+const LIVE = 'https://epayment.nets.eu';
 
 define('NETAXEPT_LIBRARY_DIRECTORY', dirname(__FILE__) . '/');
 
-
+require_once NETAXEPT_LIBRARY_DIRECTORY . 'Operation.php';
 require_once NETAXEPT_LIBRARY_DIRECTORY . 'Register.php';
 require_once NETAXEPT_LIBRARY_DIRECTORY . 'Query.php';
 require_once NETAXEPT_LIBRARY_DIRECTORY . 'Process.php';
@@ -11,6 +13,7 @@ require_once NETAXEPT_LIBRARY_DIRECTORY . 'Environment.php';
 require_once NETAXEPT_LIBRARY_DIRECTORY . 'ConnectionException.php';
 require_once NETAXEPT_LIBRARY_DIRECTORY . 'EnvironmentException.php';
 require_once NETAXEPT_LIBRARY_DIRECTORY . 'RequestException.php';
+
 
 //http
 require_once NETAXEPT_LIBRARY_DIRECTORY . '/HTTP/TransportInterface.php';

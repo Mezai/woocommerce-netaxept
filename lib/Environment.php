@@ -2,19 +2,16 @@
 
 class Netaxept_Environment
 {
-  const TEST = 'https://test.epayment.nets.eu';
 
-  const LIVE = 'https://epayment.nets.eu';
+  public static $mode;
 
-  private static $environment;
-
-  public static function setEnvironment($environment = self::TEST)
+  public static function setEnvironment($mode = TEST)
   {
-    self::$environment = $environment;
+    self::$mode = $mode;
   }
 
   public static function getEnvironment()
   {
-    return self::$environment;
+    return self::$mode;
   }
 }

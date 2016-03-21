@@ -2,5 +2,4 @@
 
 class EnvironmentNotSetException extends Netaxept_Exception
 {
-
 }

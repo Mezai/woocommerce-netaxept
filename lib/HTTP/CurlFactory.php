@@ -2,8 +2,8 @@
 
 class Netaxept_CurlFactory
 {
-  public function handle()
-  {
-    return new Netaxept_CurlHandle();
-  }
+    public function handle()
+    {
+        return new Netaxept_CurlHandle();
+    }
 }

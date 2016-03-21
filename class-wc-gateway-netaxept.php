@@ -136,7 +136,7 @@ function woocommerce_gateway_netaxept_init()
 
           /* Do register request and redirect user to the Terminal */
 
-          $request = new Netaxept_Register();
+
 
           $parameters = array(
             'merchantId' => (String)$this->merchant_id,
@@ -150,6 +150,7 @@ function woocommerce_gateway_netaxept_init()
             'terminalSinglePage' => $this->singlepage == 'yes' ? 'true' : 'false'
           );
 
+          $request = new Netaxept_Register($parameters);
 
           if ($this->testmode == 'yes') {
             Netaxept_Environment::setEnvironment(Netaxept_Environment::TEST);
@@ -157,7 +158,7 @@ function woocommerce_gateway_netaxept_init()
             Netaxept_Environment::setEnvironment(Netaxept_Environment::LIVE);
           }
 
-          $register = $request->create($parameters);
+          $register = $request->send();
           $transaction_id = $register->TransactionId;
 
           $redirect_uri = "https://test.epayment.nets.eu/Terminal/default.aspx?merchantId=".$this->merchant_id."&transactionId=".$transaction_id;

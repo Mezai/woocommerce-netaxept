@@ -66,9 +66,9 @@ class Netaxept_HTTP_Request
       $counter = 1;
       $data = '';
       foreach ($data as $key => $value) {
-        urlencode($value);
-        $data .= ($counter == 1) ? "$key=$value" : "&$key=$value";
-        $counter++;
+          urlencode($value);
+          $data .= ($counter == 1) ? "$key=$value" : "&$key=$value";
+          $counter++;
       }
 
       $this->data = $data;
